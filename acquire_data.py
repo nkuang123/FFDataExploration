@@ -1,49 +1,35 @@
 # This script will acquire ADP (average draft position) data from 
 # fantasyfootballcalculator.com in the JSON format and pack
-# it nicely into a pandas DataFrame
-
+# it nicely into a pandas DataFrame.
 import requests
+import pandas as pd
 from pandas.io.json import json_normalize
 
-# credentials such as API keys
-api_key = '92e098a7ea214119970b5e4c72ce465c'
-
-# fantasyfootballcalculator.com customizable parameters
-# when making an API request
-
-scoring_format = 'standard'  # standard or ppr
-num_of_teams = '10'  
-year = '2019'
-position = 'all'  # possible positions ['all', 'QB', 'RB', 'WR', 'TE', 'PK', 'DEF']
+def create_adp_dataframe(
+	scoring_format: str,
+	num_of_teams: str,
+	year: str,
+	position: str) -> pd.DataFrame:
 
 
-# retrieving ADP data from fantasyfootballcalculator.com
-adp_response = requests.get("https://fantasyfootballcalculator.com/api/v1/adp/{}?teams={}&year={}&position={}". \
-	format(scoring_format, num_of_teams, year, position))
+	url = '''https://fantasyfootballcalculator.com/api/v1/adp/standard?teams=
+		10&year=2019&pos=all''' \
+		.format(scoring_format, num_of_teams, year, position)
 
-# retrieving 2018 regular season player statistics from sportsdata.io 
-sd_response = requests.get("https://api.sportsdata.io/v3/nfl/scores/json/Players?key={}". \
-	format(api_key))
+	# Retrieving ADP data from fantasyfootballcalculator.com
+	adp_response = requests.get(url)
 
-# convert to JSON
-sd_json = sd_response.json()
-adp_json = adp_response.json()
+	# retrieving 2018 regular season player statistics from sportsdata.io 
+	# sd_response = requests.get("https://api.sportsdata.io/v3/nfl/scores/json/Players?key={}". \
+	# 	format(api_key))
 
-# we're only concerned with player data
-players = adp_json['players']
+	# Convert to JSON format
+	adp_json = adp_response.json()
 
-df = json_normalize(adp_json, 'players')
+	# We're only concerned with player data
+	players = adp_json['players']
 
-# let's create a mapping 
-name_to_id_dict = {player['name']: 0 for player in players} 
+	# df = json_normalize(adp_json, 'players')
+	return pd.DataFrame.from_dict(json_normalize(adp_json, 'players'))
 
-# mapping player names to player IDs
-# data still needs to be cleaned i.e. Pat Mahomes != Patrick Mahomes
-# for player in sd_json:
-# 	player_name = player['FirstName'] + " " + player['LastName']
-# 	if player_name in name_to_id_dict:
-# 		name_to_id_dict[player_name] = player['PlayerID']
-
-
-df = json_normalize(adp_json, 'players')
 

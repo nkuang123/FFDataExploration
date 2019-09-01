@@ -3,22 +3,21 @@ import json
 import pandas as pd
 from pandas.io.json import json_normalize
 
-conn = sqlite3.connect('FantasyFootballDB.db')
-c = conn.cursor()
 
-# fetch all player names and their player IDs, exclude Defenses
-sql_players = c.execute('''SELECT name, sportsdata_id FROM PLAYERS
-	WHERE position NOT IN ('DEF')''')
+def create_stats_dataframe() -> pd.DataFrame:
+	# Sportsdata.io API URL for 2018 Regular Season Player Stats:
+	# https://api.sportsdata.io/v3/nfl/stats/json/PlayerSeasonStats/2018REG
+	# ?key=92e098a7ea214119970b5e4c72ce465c
+	# 
+	# Because it is an expensive API call, we'll save the results to a local JSON 
+	# repository.
+	stats_json = 'json/2018REG.json'
 
-player_dict = {}
+	with open(stats_json) as regular2018_json:
+		data = json.load(regular2018_json)  # deserialize json file
 
-for player in sql_players:
-	name, sportsdata_id = player
-	player_dict[sportsdata_id] = name
-
-# reading in player stats for the 2018 regular season as a json file
-with open('json/2018REG.json') as regular_2018_json:
-	data = json.load(regular_2018_json)
+	# Debugging & confirmation print statements
+	# 
 	# print(data[0].keys())
 	# print("{:18} | {:15} | {:15} | {:15} | {:15} | {:15} | {:15} | {:15}".format("Name", \
 	# 	"Pass Attempts", "Pass Yards", "Pass Comp. %", \
@@ -31,22 +30,7 @@ with open('json/2018REG.json') as regular_2018_json:
 	# 			player['PassingYardsPerCompletion'], player['PassingTouchdowns'], \
 	# 			player['PassingRating']))
 
-# convert json data to DataFrame for ease 
-stat_df = pd.DataFrame.from_dict(json_normalize(data), orient='columns')
+	stats_df = pd.DataFrame.from_dict(json_normalize(data), orient='columns')
+	stats_df = stats_df.drop(columns=['ScoringDetails'])
 
-stat_df = stat_df.drop(columns=['ScoringDetails'])
-
-# let SQL deal with filtering
-# only concerned with players in ADP rankings
-# filtered_df = stat_df[stat_df['PlayerID'].isin(player_dict.keys())]
-
-# # remove unnecessary columns/statistics
-# filtered_df = filtered_df.drop(columns=['ScoringDetails'])
-
-# print(filtered_df.filter(['PlayerID', 'Team', 'Name', 'PassingYards', 'PassingTouchdowns', \
-# 	'PassingRating', 'RushingAttempts', 'RushingYards', 'RushingTouchdowns']).to_string())
-
-
-# print(filtered_df['PlayerID'])
-
-#print(player_dict)
+	return stats_df
