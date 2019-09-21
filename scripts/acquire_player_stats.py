@@ -2,6 +2,11 @@ import sqlite3
 import json
 import pandas as pd
 from pandas.io.json import json_normalize
+import os
+
+
+current_dir = os.path.dirname(os.path.abspath(__file__))
+parent_dir = os.path.dirname(current_dir)
 
 
 def create_stats_dataframe() -> pd.DataFrame:
@@ -11,7 +16,7 @@ def create_stats_dataframe() -> pd.DataFrame:
 	# 
 	# Because it is an expensive API call, we'll save the results to a local JSON 
 	# repository.
-	stats_json = 'json/2018REG.json'
+	stats_json = os.path.join(parent_dir, 'json', '2018REG.json')
 
 	with open(stats_json) as regular2018_json:
 		data = json.load(regular2018_json)  # deserialize json file

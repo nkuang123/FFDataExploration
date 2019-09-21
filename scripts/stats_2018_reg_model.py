@@ -6,8 +6,10 @@ class FootballStats_DB:
 	scramble_factor = 1.392
 
 	# create a connection to the stats database
-	def __init__(self):
-		self.conn = sqlite3.connect('FantasyFootballDB.db')  # establish connection
+	def __init__(self, db_filepath):
+		# needs to be relative to the file importing this
+		# 'FantasyFootballDB.db'
+		self.conn = sqlite3.connect(db_filepath)  # establish connection
 		self.c = self.conn.cursor()
 
 

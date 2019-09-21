@@ -1,0 +1,20 @@
+<html>
+    <head>
+      {% if title %}
+      <title>{{ title }} - Microblog</title>
+      {% else %}
+      <title>Welcome to Fun with Fantasy Football!</title>
+      {% endif %}
+    </head>
+    <body>
+        <div>Microblog: 
+          <a href="/index">Home</a>
+          <a href="/quarterbacks">Quarterbacks</a>
+          <a href="/runningbacks">Running Backs</a>
+          <a href="/widereceivers">Wide Receivers</a>
+          <a href="/tightends">Tight Ends</a>
+        </div>
+        <hr>
+        {% block content %}{% endblock %}
+    </body>
+</html>

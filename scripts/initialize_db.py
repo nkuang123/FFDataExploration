@@ -3,6 +3,10 @@ from acquire_data import create_adp_dataframe
 import requests
 import json
 import sqlite3
+import os
+
+current_dir = os.path.dirname(os.path.abspath(__file__))
+parent_dir = os.path.dirname(current_dir)
 
 # Establish connection to database
 conn = sqlite3.connect('FantasyFootballDB.db')
@@ -20,6 +24,12 @@ position = 'all'  # Possible positions: ['all', 'QB', 'RB', 'WR', 'TE',
 adp_df = create_adp_dataframe(scoring_format, num_of_teams, year, position)
 stats_df = create_stats_dataframe()
 
+# Create tables (executed once)
+# if_exists = 'fail' for ADP since we manually clean some entries
+# i.e. Need to manually change Patrick Mahomes' PlayerID
+adp_df.to_sql('PLAYERS', conn, if_exists='fail')  
+stats_df.to_sql('STATS2018REG', conn, if_exists='replace')
+
 # Need to clean up DataFrames before creating tables in the database.
 # Specifically, we need to create a sportsdata_id section in the ADP 
 # DataFrame in order to join it with the stats DataFrame for analysis 
@@ -31,7 +41,8 @@ def insert_playerID_column(adp_dataframe):
 	# players' team. A dictionary mapping will suffice.
 
 	# retrieving 2018 REG season player profile info from sportsdata.io 
-	with open('.secret/credentials.json') as f:
+	credentials = os.path.join(parent_dir, '.secret', 'credentials.json')
+	with open(credentials) as f:
 		params = json.load(f)
 		api_key = params['api_key']
 		url = "https://api.sportsdata.io/v3/nfl/scores/json/Players?key={}" \
